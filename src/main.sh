@@ -17,11 +17,12 @@ main() {
   export TEAMWORK_URI="$2"
   export TEAMWORK_API_TOKEN="$3"
   export AUTOMATIC_TAGGING="$4"
-  export BOARD_COLUMN_OPENED="$5"
-  export BOARD_COLUMN_APPROVED="$6"
-  export BOARD_COLUMN_CHANGES_REQUESTED="$7"
-  export BOARD_COLUMN_MERGED="$8"
-  export BOARD_COLUMN_CLOSED="$9"
+  export MAKE_COMMENTS_PRIVATE="$5"
+  export BOARD_COLUMN_OPENED="$6"
+  export BOARD_COLUMN_APPROVED="$7"
+  export BOARD_COLUMN_CHANGES_REQUESTED="$8"
+  export BOARD_COLUMN_MERGED="$9"
+  export BOARD_COLUMN_CLOSED="${10}"
 
   env::set_environment
 

@@ -48,6 +48,7 @@ jobs:
           TEAMWORK_URI: ${{ secrets.TEAMWORK_URI }}
           TEAMWORK_API_TOKEN: ${{ secrets.TEAMWORK_API_TOKEN }}
           AUTOMATIC_TAGGING: false
+          MAKE_COMMENTS_PRIVATE: false
           BOARD_COLUMN_OPENED: 'PR Open'
           BOARD_COLUMN_APPROVED: 'PR Approved'
           BOARD_COLUMN_CHANGES_REQUESTED: 'Changes Requested'
