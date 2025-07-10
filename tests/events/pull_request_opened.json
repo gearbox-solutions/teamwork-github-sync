@@ -9,6 +9,22 @@
         "full_name": "teamwork/github-sync"
       }
     },
+    "requested_reviewers": [
+      {
+        "name": "David Nahodyl",
+        "login": "smef"
+      }
+    ],
+    "assignees": [
+      {
+        "name": "Michael Deck",
+        "login": "likeadeckofcards"
+      },
+      {
+        "name": "Blake Smith",
+        "login": "blakesmith"
+      }
+    ],
     "base": {
       "ref": "main"
     },
@@ -20,6 +36,7 @@
     "changed_files": 4
   },
   "sender": {
-    "login": "username"
+    "login": "username",
+    "name": "firstname lastname"
   }
 }

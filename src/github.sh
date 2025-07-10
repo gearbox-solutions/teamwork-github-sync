@@ -45,7 +45,15 @@ github::get_pr_merged() {
 }
 
 github::get_sender_user() {
-  jq --raw-output .sender.login "$GITHUB_EVENT_PATH"
+  jq --raw-output '.sender.name // .sender.login' "$GITHUB_EVENT_PATH"
+}
+
+github::get_pr_assignees() {
+  jq -c --raw-output .pull_request.assignees[] "$GITHUB_EVENT_PATH"
+}
+
+github::get_pr_reviewers() {
+  jq -c --raw-output .pull_request.requested_reviewers[] "$GITHUB_EVENT_PATH"
 }
 
 github::get_review_state() {

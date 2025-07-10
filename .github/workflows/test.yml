@@ -23,3 +23,4 @@ jobs:
           BOARD_COLUMN_CHANGES_REQUESTED: 'Changes Requested'
           BOARD_COLUMN_MERGED: "Ready to Test"
           BOARD_COLUMN_CLOSED: "Rejected"
+          REASSIGN_TASKS: true

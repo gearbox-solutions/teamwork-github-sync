@@ -55,6 +55,52 @@ teamwork::get_matching_board_column_id() {
   echo "$response"
 }
 
+teamwork::get_user_id() {
+  local -r user=$1
+
+  if [ -z "$user" ]; then
+    return
+  fi
+
+  if [ "$ENV" == "test" ]; then
+#    log::message "Test - Simulate request. User Name: $user"
+    echo "9999"
+    return
+  fi
+
+  response=$(
+    curl "$TEAMWORK_URI/projects/api/v3/people.json?onlyOwnerCompany=true&userType=account&searchTerm=$user" -u "$TEAMWORK_API_TOKEN"':' |\
+      jq -r '.people[0] | .id'
+  )
+
+  if [ "$response" = "null" ]; then
+    return
+  fi
+
+  echo "$response"
+}
+
+teamwork::assign_task_to_user() {
+  local -r user_ids=$1
+
+  if [ -z "$user_ids" ]; then
+    log::message "No user ID provided"
+    return
+  fi
+
+  if [ "$ENV" == "test" ]; then
+    log::message "Test - Simulate request. Task ID: $TEAMWORK_TASK_ID - User ID: $user_id"
+    return
+  fi
+
+  response=$(curl -X "PUT" "$TEAMWORK_URI/tasks/$TEAMWORK_TASK_ID/assignments.json" \
+      -u "$TEAMWORK_API_TOKEN"':' \
+      -H 'Content-Type: application/json; charset=utf-8' \
+      -d "{ \"task\": { \"assignees\": { \"userIds\": [ $user_id ] } } }" )
+
+  log::message "$response"
+}
+
 teamwork::move_task_to_column() {
   local -r task_id=$TEAMWORK_TASK_ID
   local -r column_name=$1
@@ -87,7 +133,7 @@ teamwork::add_comment() {
   local -r body=$1
 
   if [ "$ENV" == "test" ]; then
-    log::message "Test - Simulate request. Task ID: $TEAMWORK_TASK_ID - Comment: ${body//\"/}"
+    log::message "Test - Simulate request. Task ID: $TEAMWORK_TASK_ID - Comment: ${body//\"/} - Author ID: $SENDER_USER_ID"
     return
   fi
 
@@ -96,15 +142,14 @@ teamwork::add_comment() {
        -H 'Content-Type: application/json; charset=utf-8' \
        -d "{
                  \"comment\": {
+                     \"author-id\": \"$SENDER_USER_ID\",
                      \"body\": \"${body//\"/}\",
                      \"notify\": true,
-                     \"content-type\":
-                     \"text\",
+                     \"content-type\": \"text\",
                      \"isprivate\": $([ "$MAKE_COMMENTS_PRIVATE" == true ] && echo true || echo false)
                  }
              }"
         )
-
   log::message "$response"
 }
 
@@ -171,6 +216,7 @@ ${pr_body}
 
   teamwork::add_tag "PR Open"
   teamwork::move_task_to_column "$BOARD_COLUMN_OPENED"
+  teamwork::assign_task_to_user "$TEAMWORK_REVIEWERS"
 }
 
 teamwork::pull_request_closed() {
@@ -219,6 +265,7 @@ $comment
 "
     teamwork::add_tag "PR Approved"
     teamwork::move_task_to_column "$BOARD_COLUMN_APPROVED"
+    teamwork::assign_task_to_user "$TEAMWORK_ASSIGNEES"
   elif [ "$review_state" == "changes_requested" ]; then
     teamwork::add_comment "
 **$user** requested changes to the PR: **$pr_title**
@@ -231,6 +278,7 @@ $comment
 "
     teamwork::add_tag "PR Changes Requested"
     teamwork::move_task_to_column "$BOARD_COLUMN_CHANGES_REQUESTED"
+    teamwork::assign_task_to_user "$TEAMWORK_ASSIGNEES"
   fi
 }
 

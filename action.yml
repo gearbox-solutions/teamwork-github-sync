@@ -39,6 +39,10 @@ inputs:
     description: 'The case-sensitive column name of the column you would like the task to be moved to if the PR was closed without being merged'
     required: false
     default: ''
+  REASSIGN_TASKS:
+    description: 'Reassign tasks to the requested reviewer(s) or the assigned user(s): true/false'
+    required: false
+    default: ''
 runs:
   using: 'docker'
   image: 'Dockerfile'
@@ -53,3 +57,4 @@ runs:
     - ${{ inputs.BOARD_COLUMN_CHANGES_REQUESTED }}
     - ${{ inputs.BOARD_COLUMN_MERGED }}
     - ${{ inputs.BOARD_COLUMN_CLOSED }}
+    - ${{ inputs.REASSIGN_TASKS }}

@@ -23,6 +23,7 @@ main() {
   export BOARD_COLUMN_CHANGES_REQUESTED="$8"
   export BOARD_COLUMN_MERGED="$9"
   export BOARD_COLUMN_CLOSED="${10}"
+  export REASSIGN_TASKS="${11}"
 
   env::set_environment
 
@@ -39,6 +40,50 @@ main() {
   local -r action=$(github::get_action)
 
   log::message "Event: $event - Action: $action"
+
+  if [ $REASSIGN_TASKS == 'true' ]; then
+    local tw_assignees=""
+    local tw_reviewers=""
+
+    while IFS= read -r assignee; do
+      if [ "$assignee" != "" ]; then
+        local assignee_name=$(echo "$assignee" | jq --raw-output .name)
+
+        if [ "$ENV" == "test" ]; then
+          log::message "Assignee found: $assignee_name"
+        fi
+
+        local tw_user_id=$(teamwork::get_user_id "$assignee_name")
+        if [ "$tw_assignees" != "" ]; then
+          tw_assignees="$tw_assignees,"
+        fi
+        tw_assignees="$tw_assignees$tw_user_id"
+      fi
+    done <<< "$(github::get_pr_assignees)"
+
+    while IFS= read -r reviewer; do
+      if [ "$reviewer" != "" ]; then
+        local reviewer_name=$(echo "$reviewer" | jq --raw-output .name)
+
+        if [ "$ENV" == "test" ]; then
+          log::message "Reviewer found: $reviewer_name"
+        fi
+
+        local tw_user_id=$(teamwork::get_user_id "$reviewer_name")
+        if [ "$tw_reviewers" != "" ]; then
+          tw_reviewers="$tw_reviewers,"
+        fi
+        tw_reviewers="$tw_reviewers$tw_user_id"
+      fi
+    done <<< "$(github::get_pr_reviewers)"
+
+    export TEAMWORK_ASSIGNEES="$tw_assignees"
+    echo $TEAMWORK_ASSIGNEES
+    export TEAMWORK_REVIEWERS="$tw_reviewers"
+    echo $TEAMWORK_REVIEWERS
+  fi
+
+  export SENDER_USER_ID=$(teamwork::get_user_id "$(github::get_sender_user)")
 
   local project_id
   IFS=',' read -r -a task_ids <<< "$task_ids_str"
