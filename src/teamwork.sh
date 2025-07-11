@@ -96,7 +96,7 @@ teamwork::assign_task_to_user() {
   response=$(curl -X "PUT" "$TEAMWORK_URI/tasks/$TEAMWORK_TASK_ID/assignments.json" \
       -u "$TEAMWORK_API_TOKEN"':' \
       -H 'Content-Type: application/json; charset=utf-8' \
-      -d "{ \"task\": { \"assignees\": { \"userIds\": [ $user_id ] } } }" )
+      -d "{ \"task\": { \"assignees\": { \"userIds\": [ $user_ids ] } } }" )
 
   log::message "$response"
 }
