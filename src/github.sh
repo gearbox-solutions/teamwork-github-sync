@@ -44,6 +44,10 @@ github::get_pr_merged() {
   jq --raw-output .pull_request.merged "$GITHUB_EVENT_PATH"
 }
 
+github::get_sender_login() {
+  jq --raw-output '.sender.login' "$GITHUB_EVENT_PATH"
+}
+
 github::get_sender_user() {
   jq --raw-output '.sender.name // .sender.login' "$GITHUB_EVENT_PATH"
 }

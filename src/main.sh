@@ -24,6 +24,7 @@ main() {
   export BOARD_COLUMN_MERGED="$9"
   export BOARD_COLUMN_CLOSED="${10}"
   export REASSIGN_TASKS="${11}"
+  export USER_MAPPING="${12}"
 
   env::set_environment
 
@@ -47,13 +48,20 @@ main() {
 
     while IFS= read -r assignee; do
       if [ "$assignee" != "" ]; then
-        local assignee_name=$(echo "$assignee" | jq --raw-output .name)
+        local assignee_login=$(echo "$assignee" | jq --raw-output '.login')
+        local assignee_lookup=$(echo "$USER_MAPPING" | jq --raw-output --arg github_login "$assignee_login" '.[$github_login] // empty')
 
         if [ "$ENV" == "test" ]; then
-          log::message "Assignee found: $assignee_name"
+          log::message "Assignee found: $assignee_lookup"
         fi
 
         local tw_user_id=$(teamwork::get_user_id "$assignee_name")
+        if [ -z "$tw_user_id" ]; then
+          local assignee_email=$(echo "$assignee" | jq --raw-output '.email // .name // .login')
+
+          tw_user_id=$(teamwork::get_user_id "$assignee_email")
+        fi
+
         if [ "$tw_assignees" != "" ]; then
           tw_assignees="$tw_assignees,"
         fi
@@ -63,18 +71,20 @@ main() {
 
     while IFS= read -r reviewer; do
       if [ "$reviewer" != "" ]; then
-        local reviewer_name=$(echo "$reviewer" | jq --raw-output '.name // .login')
+        local reviewer_login=$(echo "$reviewer" | jq --raw-output '.login')
+        local reviewer_lookup=$(echo "$USER_MAPPING" | jq --raw-output --arg github_login "$reviewer_login" '.[$github_login] // empty')
 
         if [ "$ENV" == "test" ]; then
-          log::message "Reviewer found: $reviewer_name"
+          log::message "Reviewer found: $reviewer_lookup"
         fi
 
-        local tw_user_id=$(teamwork::get_user_id "$reviewer_name")
+        local tw_user_id=$(teamwork::get_user_id "$reviewer_lookup")
         if [ -z "$tw_user_id" ]; then
-          local reviewer_email=$(echo "$reviewer" | jq --raw-output .email)
+          local reviewer_email=$(echo "$reviewer" | jq --raw-output '.email // .name // .login')
 
           tw_user_id=$(teamwork::get_user_id "$reviewer_email")
         fi
+
         if [ "$tw_reviewers" != "" ]; then
           tw_reviewers="$tw_reviewers,"
         fi
@@ -88,7 +98,9 @@ main() {
     echo $TEAMWORK_REVIEWERS
   fi
 
-  export SENDER_USER_ID=$(teamwork::get_user_id "$(github::get_sender_user)")
+  local sender_login="$(github::get_sender_login)"
+  local sender_lookup=$(echo "$USER_MAPPING" | jq --raw-output --arg github_login "$sender_login" '.[$github_login] // empty')
+  export SENDER_USER_ID=$(teamwork::get_user_id "$sender_lookup")
 
   local project_id
   IFS=',' read -r -a task_ids <<< "$task_ids_str"

@@ -43,6 +43,10 @@ inputs:
     description: 'Reassign tasks to the requested reviewer(s) or the assigned user(s): true/false'
     required: false
     default: ''
+  USER_MAPPING:
+    description: 'JSON Object User mapping for github usernames to teamwork lookup values. Example: {"github_username": "teamwork name/email"}'
+    required: false
+    default: ''
 runs:
   using: 'docker'
   image: 'Dockerfile'
@@ -58,3 +62,4 @@ runs:
     - ${{ inputs.BOARD_COLUMN_MERGED }}
     - ${{ inputs.BOARD_COLUMN_CLOSED }}
     - ${{ inputs.REASSIGN_TASKS }}
+    - ${{ inputs.USER_MAPPING }}
