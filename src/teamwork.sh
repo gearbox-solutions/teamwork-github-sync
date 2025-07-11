@@ -265,12 +265,14 @@ teamwork::reviewers_changed() {
   teamwork::add_comment "
 **$user** changed who is reviewing the PR: **$pr_title**
 [$pr_url]($pr_url)
+
 ---
 
 ${pr_reviewers}
 
 ---
- "
+
+  "
 
   teamwork::add_tag "PR Open"
 
