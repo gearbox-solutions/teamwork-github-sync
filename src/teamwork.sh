@@ -219,6 +219,72 @@ ${pr_body}
   teamwork::assign_task_to_user "$TEAMWORK_REVIEWERS"
 }
 
+teamwork::pull_request_edited() {
+  local -r pr_url=$(github::get_pr_url)
+  local -r pr_title=$(github::get_pr_title)
+  local -r head_ref=$(github::get_head_ref)
+  local -r base_ref=$(github::get_base_ref)
+  local -r user=$(github::get_sender_user)
+  local -r pr_stats=$(github::get_pr_patch_stats)
+  local -r pr_body=$(github::get_pr_body)
+  IFS=" " read -r -a pr_stats_array <<< "$pr_stats"
+
+  teamwork::add_comment "
+**$user** edited a PR: **$pr_title**
+[$pr_url]($pr_url)
+\`$base_ref\` ⬅️ \`$head_ref\`
+
+---
+
+${pr_body}
+
+---
+
+🔢 ${pr_stats_array[0]} commits / 📝 ${pr_stats_array[1]} files updated / ➕ ${pr_stats_array[2]} additions / ➖ ${pr_stats_array[3]} deletions
+
+  "
+
+  teamwork::add_tag "PR Open"
+  teamwork::move_task_to_column "$BOARD_COLUMN_OPENED"
+  teamwork::assign_task_to_user "$TEAMWORK_REVIEWERS"
+}
+teamwork::reviewers_changed() {
+  local -r pr_url=$(github::get_pr_url)
+  local -r pr_title=$(github::get_pr_title)
+  local -r head_ref=$(github::get_head_ref)
+  local -r base_ref=$(github::get_base_ref)
+  local -r user=$(github::get_sender_user)
+  local -r pr_body=$(github::get_pr_body)
+  local -r pr_reviewers=$(github::get_pr_reviewers | jq -r '.|map(.name)')
+
+  teamwork::add_comment "
+**$user** changed who is reviewing the PR: **$pr_title**
+[$pr_url]($pr_url)
+---
+
+${pr_reviewers}
+
+---
+ "
+
+  teamwork::add_tag "PR Open"
+
+  if [ -z "$TEAMWORK_REVIEWERS" ]; then
+    log::message "No reviewers found, skipping PR reviewers change"
+    return
+  fi
+
+  teamwork::assign_task_to_user "$TEAMWORK_REVIEWERS"
+}
+
+teamwork::pull_request_review_request_removed() {
+  teamwork::reviewers_changed
+}
+
+teamwork::pull_request_review_requested() {
+  teamwork::reviewers_changed
+}
+
 teamwork::pull_request_closed() {
   local -r user=$(github::get_sender_user)
   local -r pr_url=$(github::get_pr_url)

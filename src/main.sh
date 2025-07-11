@@ -103,6 +103,12 @@ main() {
 
     if [ "$event" == "pull_request" ] && [ "$action" == "opened" ]; then
       teamwork::pull_request_opened
+    elif [ "$event" == "pull_request" ] && [ "$action" == "edited" ]; then
+      teamwork::pull_request_edited
+    elif [ "$event" == "pull_request" ] && [ "$action" == "review_request_removed" ]; then
+      teamwork::pull_request_review_request_removed
+    elif [ "$event" == "pull_request" ] && [ "$action" == "review_requested" ]; then
+      teamwork::pull_request_review_requested
     elif [ "$event" == "pull_request" ] && [ "$action" == "closed" ]; then
       teamwork::pull_request_closed
     elif [ "$event" == "pull_request_review" ] && [ "$action" == "submitted" ]; then
