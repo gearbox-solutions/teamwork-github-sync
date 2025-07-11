@@ -248,6 +248,7 @@ ${pr_body}
   teamwork::move_task_to_column "$BOARD_COLUMN_OPENED"
   teamwork::assign_task_to_user "$TEAMWORK_REVIEWERS"
 }
+
 teamwork::reviewers_changed() {
   local -r pr_url=$(github::get_pr_url)
   local -r pr_title=$(github::get_pr_title)
@@ -255,7 +256,10 @@ teamwork::reviewers_changed() {
   local -r base_ref=$(github::get_base_ref)
   local -r user=$(github::get_sender_user)
   local -r pr_body=$(github::get_pr_body)
-  local -r pr_reviewers=$(github::get_pr_reviewers | jq -r '.|map(.name)')
+  local -r pr_reviewers=$(github::get_pr_reviewers | jq -r '.name // .login')
+
+  log::message "PR Reviewers: $pr_reviewers"
+  log::message "PR Reviewers: $TEAMWORK_REVIEWERS"
 
   teamwork::add_comment "
 **$user** changed who is reviewing the PR: **$pr_title**
