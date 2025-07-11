@@ -55,7 +55,7 @@ main() {
           log::message "Assignee found: $assignee_lookup"
         fi
 
-        local tw_user_id=$(teamwork::get_user_id "$assignee_name")
+        local tw_user_id=$(teamwork::get_user_id "$assignee_lookup")
         if [ -z "$tw_user_id" ]; then
           local assignee_email=$(echo "$assignee" | jq --raw-output '.email // .name // .login')
 
