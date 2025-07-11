@@ -258,8 +258,9 @@ teamwork::reviewers_changed() {
   local -r pr_body=$(github::get_pr_body)
   local -r pr_reviewers=$(github::get_pr_reviewers | jq -r '.name // .login')
 
+  log::message "$(github::get_pr_reviewers)"
   log::message "PR Reviewers: $pr_reviewers"
-  log::message "PR Reviewers: $TEAMWORK_REVIEWERS"
+  log::message "TW PR Reviewers: $TEAMWORK_REVIEWERS"
 
   teamwork::add_comment "
 **$user** changed who is reviewing the PR: **$pr_title**

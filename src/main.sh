@@ -63,13 +63,18 @@ main() {
 
     while IFS= read -r reviewer; do
       if [ "$reviewer" != "" ]; then
-        local reviewer_name=$(echo "$reviewer" | jq --raw-output .name)
+        local reviewer_name=$(echo "$reviewer" | jq --raw-output '.name // .login')
 
         if [ "$ENV" == "test" ]; then
           log::message "Reviewer found: $reviewer_name"
         fi
 
         local tw_user_id=$(teamwork::get_user_id "$reviewer_name")
+        if [ -z "$tw_user_id" ]; then
+          local reviewer_email=$(echo "$reviewer" | jq --raw-output .email)
+
+          tw_user_id=$(teamwork::get_user_id "$reviewer_email")
+        fi
         if [ "$tw_reviewers" != "" ]; then
           tw_reviewers="$tw_reviewers,"
         fi
